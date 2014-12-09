@@ -1,0 +1,46 @@
+TinyPKC performs assymmetric cryptography for TinyOS 2.x based on the original
+implementation in CyaSSL (http://www.yassl.com/yaSSL/Products-cyassl.html). It
+offers support for the following operations:
+
+    - RSA public key encryption / private key decryption
+    - RSA private key signature generation / public key signature verification
+    - ECDSA signature generation and verification
+    - ECDH operations
+    
+Regarding the key length, it supports ECC key lengths from 112 bits to 521 bits 
+and arbitrary RSA key lengths.
+
+*** Compiling ***
+
+Compilation of the Code is similar to any other TinyOS program. For example:
+
+        make telosb install 
+
+However, there are a few things to keep in mind when writing your Makefile:
+
+    - First, TinyPKC requires integer.c for all big integer operations. The 
+      TinyOS compiler cannot automatically include this file when analyzing the
+      wiring, therefore you need to add it explictitly to the pre-processor 
+      scope by adding "PFLAGS += ./integer.c" to your Makefile.
+    - All big integers are allocated statically or on the stack. Therefore,
+      you need to declare the length of your big integers in the Makefile with
+      the following flag: "CFLAGS += -DMP_PREC=128". In this example, all
+      big integers are 128 bytes in size and thus can house a 1024-bit RSA key.
+    - If you plan on using ECC, you need to enable it with this compile flag:
+      "CFLAGS += -DHAVE_ECC"
+    - For testing purposes, you can enable hardcoded RSA or ECC keypairs in
+      ecc.h or RsaTK.h, respectively, by setting "CFLAGS += -DECC_TEST_VALUES"
+      or "CFLAGS += -DRSA_TEST_VALUES" in the Makefile
+    - To switch between ECC curves, set the according parameter in ecc.h
+    - The default case is a 32-bit microcontroller with 28-bit digits in a big 
+      integer. Switch to 16-bit or 8-bit by defining the preprocessor flags 
+      "MP_16BIT" or "MP_8BIT" (see integer.h).
+
+Some (rudimentary and badly documented) test applications can be found in 
+AppRSAP.nc and AppECCP.nc
+
+*** differences to CyaSSL ***
+The current release is based on Version 2.3.0 of CyaSSL. The main differences
+lie in integer.c which was changed to static memory allocation due to the 
+limitations of nesC. Appart from that, the RSA and ECC code has been ported into
+nesC format for easy integration with existing nesC programms.
